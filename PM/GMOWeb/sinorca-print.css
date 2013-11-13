@@ -1,0 +1,175 @@
+/************************************
+ * TITLE: Sinorca Print Stylesheet  * 
+ * URI  : sinorca/sinorca-print.css *
+ ************************************/
+
+
+/* ##### Common Styles ##### */
+
+body {
+  width :100%;
+  color: black;
+  background-color: white;
+  font-family: "times new roman", times, roman, serif;
+  font-size: 12pt;
+  margin: 0;
+  padding: 0;
+}
+
+acronym, .titleTip {
+  font-style: italic;
+  border-bottom: none;
+}
+
+acronym:after, .titleTip:after {  /* Prints titles after the acronyms/titletips. Doesn't work in MSIE */
+  content: "(" attr(title) ")";
+  font-size: 90%;
+  font-style: normal;
+  padding-left: 1ex;
+}
+
+.doNotPrint {
+  display: none !important;
+}
+
+
+/* ##### Header ##### */
+
+#header{
+  width:100%;
+  margin: 0;
+  padding: 0;
+  border-bottom: 1px solid black;
+}
+
+.superHeader {
+  display: none;
+}
+
+.headerTitle {
+  color: black;
+  background-color: transparent;
+  font-family: "trebuchet ms", verdana, helvetica, arial, sans-serif;
+  font-size: 200%;
+  font-weight: normal;
+  text-decoration: none;
+  margin: 0;
+  padding: 0 0 0.5ex 0;
+}
+
+.subHeader {
+  display: none;
+}
+
+
+/* ##### Side Bar ##### */
+
+#side-bar {
+  display: none;
+}
+
+
+/* ##### Main Copy ##### */
+
+#main-copy {
+  text-align: justify;
+  margin: 0;
+  padding: 0;
+}
+
+#main-copy h1 {
+  font-family: "trebuchet ms", verdana, helvetica, arial, sans-serif;
+  font-size: 120%;
+  margin: 2ex 0 1ex 0;
+  padding: 0;
+}
+
+#main-copy a {
+  color: black;
+  background-color: transparent;
+  text-decoration: none;
+}
+
+#main-copy a:after {  /* Prints the links' URIs after the links' texts. Doesn't work in MSIE */
+  content: "<" attr(href) ">";
+  font-size: 90%;
+  padding-left: 1ex;
+}
+
+p {
+  margin: 0 0 2ex 0;
+  padding: 0;
+}
+
+dl {
+  margin: 0;
+  padding: 0;
+}
+
+dt {
+  font-weight: bold;
+  margin: 0;
+  padding: 0 0 1ex 0;
+}
+
+dd {
+  margin: 0 0 2ex 1.5em;
+  padding: 0;
+}
+
+.topOfPage {
+  display: none;
+}
+
+
+/* ##### Footer ##### */
+
+#footer {
+  margin: 2em 0 0 0;
+  padding: 1ex 0 0 0;
+  border-top: 1px solid black;
+}
+
+#footer a {
+  color: black;
+  background-color: transparent;
+  text-decoration: none;
+}
+
+/* ##### Calendar ##### */
+.cal_Theme1 .ajax__calendar_container       
+{
+	background-color: #e2e2e2;     
+	border:solid 1px #cccccc;}
+.cal_Theme1 .ajax__calendar_header      
+{
+	background-color: #ffffff;     
+	margin-bottom: 4px;}
+.cal_Theme1 .ajax__calendar_title,.cal_Theme1 .ajax__calendar_next,.cal_Theme1 .ajax__calendar_prev        
+{
+	color: #004080;     
+	padding-top: 3px;}
+.cal_Theme1 .ajax__calendar_body        
+{
+	background-color: #e9e9e9;     
+	border: solid 1px #cccccc;}
+.cal_Theme1 .ajax__calendar_dayname     
+{
+	text-align:center;     
+	font-weight:bold;     
+	margin-bottom: 4px;     
+	margin-top: 2px;}
+.cal_Theme1 .ajax__calendar_day     
+{
+	text-align:center;}
+.cal_Theme1 .ajax__calendar_hover .ajax__calendar_day,.cal_Theme1 .ajax__calendar_hover .ajax__calendar_month,.cal_Theme1 .ajax__calendar_hover .ajax__calendar_year,.cal_Theme1 .ajax__calendar_active      
+{
+	color: #004080;     
+	font-weight: bold;     
+	background-color: #ffffff;}
+.cal_Theme1 .ajax__calendar_today       
+{
+	font-weight:bold;}
+.cal_Theme1 .ajax__calendar_other,.cal_Theme1 .ajax__calendar_hover .ajax__calendar_today,.cal_Theme1 .ajax__calendar_hover .ajax__calendar_title     
+{
+	color: #bbbbbb;}
