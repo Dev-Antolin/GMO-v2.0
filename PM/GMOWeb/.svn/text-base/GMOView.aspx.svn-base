@@ -1,0 +1,21 @@
+﻿<%@ Page Language="VB" MasterPageFile="~/LeftPageMaster.master" AutoEventWireup="false" CodeFile="GMOView.aspx.vb" Inherits="GMOView" title="GMOWeb Version 1.0" %>
+
+<asp:Content ID="Content1" ContentPlaceHolderID="LeftContentPlaceHolder" Runat="Server">
+<div id="content2">
+<div id="content">
+
+    <asp:Image ID="imgDisplayMe" runat="server" 
+        ImageUrl="~/Images/blank.gif" Height="372px" Width="300px" />
+
+</div>
+    &nbsp;<br />
+    &nbsp;<asp:Button ID="btnBack" runat="server" Text="Back" 
+        style="top: 4px; left: 6px; position: absolute; height: 26px; width: 50px" />
+    <br />
+    &nbsp;<asp:Button ID="btnPrev" runat="server" Text="Prev" Width="50px" 
+        style="top: 4px; left: 76px; position: absolute; height: 26px" />
+    &nbsp;<asp:Button ID="btnNext" runat="server" Text="Next" Width="50px" 
+        style="top: 4px; left: 130px; position: absolute; height: 26px" />
+</div>
+</asp:Content>
+
