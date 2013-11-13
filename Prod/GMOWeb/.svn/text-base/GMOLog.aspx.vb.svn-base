@@ -1,0 +1,185 @@
+﻿Imports System
+Imports System.IO
+Imports System.Data
+Imports System.Data.SqlClient
+Imports clsGMOUser
+Partial Class GMOLog
+    Inherits System.Web.UI.Page
+    Dim sFileDirVis As String = System.Web.HttpContext.Current.Server.MapPath("") & "\VisminImageMemo\"
+    Dim sFileDirLuz As String = System.Web.HttpContext.Current.Server.MapPath("") & "\LuzonImageMemo\"
+    Protected Sub Page_Load(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Load
+        Me.Session("Oyeh") = 0
+        Me.Session("Plus") = 0
+        ImageDelete()
+        CheckLogin()
+        txtSearch.Attributes.Add("onkeypress", "return Chars(event)")
+        Dim ds As New DataSet
+        ds = Select_Stat_Recipient()
+        If Not ds Is Nothing Then
+            gvRecipientsList.DataSource = ds.Tables(0)
+            gvRecipientsList.DataBind()
+        End If
+        For x = 0 To gvRecipientsList.Rows.Count - 1
+            If gvRecipientsList.Rows(x).Cells(1).Text = 1 Then
+                gvRecipientsList.Rows(x).Cells(1).Text = "Open"
+            End If
+        Next
+        Trap_me()
+    End Sub
+    Private Sub CheckLogin()
+        If Me.Session("_fullname") = "" Then
+            Response.Redirect("Login.aspx")
+        End If
+    End Sub
+    Private Sub DeleteFile(ByVal strFileName As String)
+        If strFileName.Trim().Length > 0 Then
+            Dim fi As New FileInfo(strFileName)
+            If (fi.Exists) Then
+                fi.Delete()
+            End If
+        End If
+    End Sub
+    Sub ImageDelete()
+        Dim Del As String
+        If Trim(Me.Session("_zonecode")) = "VISMIN" Then
+            For Each Del In System.IO.Directory.GetFiles(sFileDirVis, "*.jpg")
+                System.IO.File.Delete(Del)
+            Next Del
+        End If
+        If Trim(Me.Session("_zonecode")) = "LUZON" Then
+            For Each Del In System.IO.Directory.GetFiles(sFileDirLuz, "*.jpg")
+                System.IO.File.Delete(Del)
+            Next Del
+        End If
+    End Sub
+    Public Function Select_Stat_Recipient() As DataSet
+        Dim Con As New SqlConnection
+        Dim Com As New SqlCommand
+        Dim ds As New DataSet
+        _DatabaseConnection1()
+        _ConnectionString1()
+        If Trim(Me.Session("_zonecode")) = "VISMIN" Then
+            Try
+                Dim y As String
+                y = "exec memo_recipients_statusV 'vismin'"
+                ds = Execute_Dataset(y)
+            Catch ex As Exception
+                MsgBox(ex.Message)
+            End Try
+            Con.Close()
+            Com.Dispose()
+        End If
+        If Trim(Me.Session("_zonecode")) = "LUZON" Then
+            Try
+                Dim y As String
+                y = "exec memo_recipients_statusL 'luzon'"
+                ds = Execute_Dataset(y)
+            Catch ex As Exception
+                MsgBox(ex.Message)
+            End Try
+            Con.Close()
+            Com.Dispose()
+        End If
+        Return ds
+    End Function
+    Public Function Select_RecipientsName() As DataSet
+        Dim Con As New SqlConnection
+        Dim Com As New SqlCommand
+        Dim ds As New DataSet
+        _DatabaseConnection1()
+        _ConnectionString1()
+        If Trim(Me.Session("_zonecode")) = "VISMIN" Then
+            Try
+                Dim y As String
+                y = "select Fullname, CReceived, CostCenters, Division, CDate from Memo_Recipients_name where fullname like '%" & txtSearch.Text.Trim.Replace("'", "''") & "%' and zonecode = 'vismin' order by CDate desc"
+                ds = Execute_Dataset(y)
+            Catch ex As Exception
+                MsgBox(ex.Message)
+            End Try
+            Con.Close()
+            Com.Dispose()
+        End If
+        If Trim(Me.Session("_zonecode")) = "LUZON" Then
+            Try
+                Dim y As String
+                y = "select Fullname, CReceived, CostCenters, Division, CDate from Memo_Recipients_name where fullname like '%" & txtSearch.Text.Trim.Replace("'", "''") & "%' and zonecode = 'luzon' order by CDate desc"
+                ds = Execute_Dataset(y)
+            Catch ex As Exception
+                MsgBox(ex.Message)
+            End Try
+            Con.Close()
+            Com.Dispose()
+        End If
+        Return ds
+    End Function
+    Public Function Execute_Dataset(ByVal as_sql As String) As DataSet
+        Dim Con As New SqlConnection
+        Dim Com As New SqlCommand
+        Dim sqlConn As New SqlConnection
+        Dim sqlAdapter As SqlDataAdapter
+        Dim sqlDataset As New DataSet
+        Execute_Dataset = Nothing
+        Try
+            Try
+                Con.ConnectionString = constr2
+                If Con.State = ConnectionState.Closed Then
+                    Con.Open()
+                End If
+            Catch
+            End Try
+            sqlAdapter = New SqlDataAdapter(as_sql, Con)
+            sqlAdapter.Fill(sqlDataset)
+            If Not sqlDataset Is Nothing Then
+                If sqlDataset.Tables(0).Rows.Count <> 0 Then
+                    Execute_Dataset = sqlDataset
+                    sqlDataset.Dispose()
+                    sqlAdapter.Dispose()
+                End If
+            End If
+            Con.Close()
+        Catch ex As Exception
+            MsgBox(ex.Message)
+            Con.Close()
+        End Try
+    End Function
+    Protected Sub txtSearch_TextChanged(ByVal sender As Object, ByVal e As System.EventArgs) Handles txtSearch.TextChanged
+        If txtSearch.Text = "" Then
+            lblMessage.Visible = True
+            lblMessage.ForeColor = Drawing.Color.Red
+            lblMessage.Text = "Please input name!"
+            Exit Sub
+        End If
+        Dim sd As New DataSet
+        sd = Select_RecipientsName()
+        If Not sd Is Nothing Then
+            gvRecipientsList.DataSource = sd.Tables(0)
+            gvRecipientsList.DataBind()
+            For x = 0 To gvRecipientsList.Rows.Count - 1
+                If gvRecipientsList.Rows(x).Cells(1).Text = 1 Then
+                    gvRecipientsList.Rows(x).Cells(1).Text = "Open"
+                End If
+            Next
+            txtSearch.Focus()
+            txtSearch.Text = ""
+            lblMessage.ForeColor = Drawing.Color.Black
+            lblMessage.Text = "<< Search name here."
+            Exit Sub
+        Else
+            gvRecipientsList.DataSource = Nothing
+            gvRecipientsList.DataBind()
+            txtSearch.Text = ""
+            lblMessage.Visible = True
+            lblMessage.ForeColor = Drawing.Color.Red
+            lblMessage.Text = "No Record found!."
+            Exit Sub
+        End If
+    End Sub
+    Sub Trap_me()
+        If txtSearch.Text = "" Then
+            lblMessage.Visible = True
+            lblMessage.ForeColor = Drawing.Color.Red
+            lblMessage.Text = "Please input name!"
+            Exit Sub
+        End If
+    End Sub
+End Class
