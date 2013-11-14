@@ -1,0 +1,193 @@
+﻿Imports System.Data
+Imports System.IO
+Imports System.Data.SqlClient
+Imports Microsoft.VisualBasic
+
+Public Class clsGMOUser
+    Public Shared sCorpName As String
+    Public Shared sSQLServer As String
+    Public Shared sDB, sSA, sSApass As String
+    Public Shared sDest1, sDest2 As String
+    Public Shared SMTPAdmin, SMTPServer, SMTPUser, SMTPPass, SMTPSubject As String
+    Public Shared constr As String
+    Public Shared constr2 As String
+    Public Shared Sub _DatabaseConnection()
+        Dim MyDBcon As New SqlClient.SqlConnection
+        Dim separators As String = " "
+        Dim commands As String = Microsoft.VisualBasic.Command()
+        Dim args() As String = commands.Split(separators.ToCharArray)
+
+        Try
+            Dim sr As StreamReader = New StreamReader(System.Web.HttpContext.Current.Server.MapPath("") + "\GMOWebServCon.ini")
+            Dim Key_Server, Key_BranchCode, Key_SA, Key_SAPass, Key_CorpName, Key_SMTPAdmin, Key_SMTPServer, Key_SMTPUser, Key_SMTPPass, Key_SMTPSubject As String
+
+            Key_BranchCode = "[Branch Code]="
+            Key_SAPass = "[Branch Reg Key]="
+            Key_SA = "[SA]="
+            Key_Server = "[Server]="
+            Key_CorpName = "[CorpName]="
+            Key_SMTPAdmin = "[SMTPADMIN]="
+            Key_SMTPServer = "[SMTPServer]="
+            Key_SMTPUser = "[SMTPUser]="
+            Key_SMTPPass = "[SMTPPassword]="
+            Key_SMTPSubject = "[SMTPSubject]="
+
+            sDB = "101"
+            sSApass = "exact"
+            sSA = "sa"
+            sSQLServer = "(local)"
+            sCorpName = "Michel J. Lhuillier Pawnshops, Inc."
+            SMTPAdmin = "MISBOSTesting@yahoo.com"
+            SMTPServer = "192.168.12.236"
+            SMTPUser = "mis.vismin@mlhuillier1x.com"
+            SMTPPass = "mlinc1234"
+            SMTPSubject = "Pls. click this link: http://192.168.12.214/GMOWeb/login.aspx"
+
+            Dim line As String
+            line = sr.ReadLine()
+            While Not line Is Nothing
+                line.Replace(" =", "=").Replace("= ", "=")
+
+                If line.StartsWith(Key_BranchCode) Then
+                    sDB = Replace(line, Key_BranchCode, "")
+                End If
+                If line.StartsWith(Key_SAPass) Then
+                    sSApass = decryptPass(Replace(line, Key_SAPass, ""))
+                End If
+                If line.StartsWith(Key_SA) Then
+                    sSA = Replace(line, Key_SA, "")
+                End If
+                If line.StartsWith(Key_Server) Then
+                    sSQLServer = Replace(line, Key_Server, "")
+                End If
+                If line.StartsWith(Key_CorpName) Then
+                    sCorpName = Replace(line, Key_CorpName, "")
+                End If
+                If line.StartsWith(Key_SMTPAdmin) Then
+                    SMTPAdmin = Replace(line, Key_SMTPAdmin, "")
+                End If
+                If line.StartsWith(Key_SMTPServer) Then
+                    SMTPServer = Replace(line, Key_SMTPServer, "")
+                End If
+                If line.StartsWith(Key_SMTPUser) Then
+                    SMTPUser = Replace(line, Key_SMTPUser, "")
+                End If
+                If line.StartsWith(Key_SMTPPass) Then
+                    SMTPPass = Replace(line, Key_SMTPPass, "")
+                End If
+                If line.StartsWith(Key_SMTPSubject) Then
+                    SMTPSubject = Replace(line, Key_SMTPSubject, "")
+                End If
+                line = sr.ReadLine()
+            End While
+            sr.Close()
+
+        Catch Ee As Exception
+            MsgBox(Ee.Message)
+        End Try
+    End Sub
+    Public Shared Sub _ConnectionString()
+        constr = "Data Source = " + sSQLServer + ";Initial Catalog = " + sDB + ";User ID = " + sSA
+
+        If sSApass <> "" Then
+            constr = constr + ";Password = " + sSApass
+        End If
+
+    End Sub
+    Public Shared Sub _DatabaseConnection1()
+        Dim MyDBcon As New SqlClient.SqlConnection
+        Dim separators As String = " "
+        Dim commands As String = Microsoft.VisualBasic.Command()
+        Dim args() As String = commands.Split(separators.ToCharArray)
+
+        Try
+            Dim sr As StreamReader = New StreamReader(System.Web.HttpContext.Current.Server.MapPath("") + "\GMOWebDatabase.ini")
+            Dim Key_Server, Key_BranchCode, Key_SA, Key_SAPass, Key_CorpName, Key_DestinationL, Key_DestinationV As String
+
+            Key_BranchCode = "[Branch Code]="
+            Key_SAPass = "[Branch Reg Key]="
+            Key_SA = "[SA]="
+            Key_Server = "[Server]="
+            Key_DestinationL = "[sDestinationL]="
+            Key_DestinationV = "[sDestinationV]="
+            Key_CorpName = "[CorpName]="
+
+            sDB = "101"
+            sSApass = "exact"
+            sSA = "sa"
+            sSQLServer = "(local)"
+            sDest1 = "D:\Luzon"
+            sDest2 = "D:\Vismin"
+            sCorpName = "Michel J. Lhuillier Pawnshops, Inc."
+
+            Dim line As String
+            line = sr.ReadLine()
+            While Not line Is Nothing
+                line.Replace(" =", "=").Replace("= ", "=")
+                
+                If line.StartsWith(Key_BranchCode) Then
+                    sDB = Replace(line, Key_BranchCode, "")
+                End If
+                If line.StartsWith(Key_SAPass) Then
+                    sSApass = decryptPass(Replace(line, Key_SAPass, ""))
+                End If
+                If line.StartsWith(Key_SA) Then
+                    sSA = Replace(line, Key_SA, "")
+                End If
+                If line.StartsWith(Key_Server) Then
+                    sSQLServer = Replace(line, Key_Server, "")
+                End If
+                If line.StartsWith(Key_DestinationL) Then
+                    sDest1 = Replace(line, Key_DestinationL, "")
+                End If
+                If line.StartsWith(Key_DestinationV) Then
+                    sDest2 = Replace(line, Key_DestinationV, "")
+                End If
+                If line.StartsWith(Key_CorpName) Then
+                    sCorpName = Replace(line, Key_CorpName, "")
+                End If
+                line = sr.ReadLine()
+            End While
+            sr.Close()
+
+        Catch Ee As Exception
+            MsgBox(Ee.Message)
+        End Try
+    End Sub
+    Public Shared Sub _ConnectionString1()
+        constr2 = "Data Source = " + sSQLServer + ";Initial Catalog = " + sDB + ";User ID = " + sSA
+
+        If sSApass <> "" Then
+            constr2 = constr2 + ";Password = " + sSApass
+        End If
+
+    End Sub
+    Shared Function decryptPass(ByVal RawStr As String) As String
+
+        Dim i As Integer
+        Dim decryptedPass As String
+        i = 3
+        decryptedPass = ""
+        While i < RawStr.Length
+            decryptedPass = decryptedPass + RawStr.Substring(i - 1, 1)
+            i = NextPrime(i)
+        End While
+        decryptPass = decryptedPass
+
+    End Function
+    Shared Function NextPrime(ByVal i As Integer) As Integer
+        Dim ctr As Integer
+        ctr = i + 1
+        While Not isPrime(ctr)
+            ctr = ctr + 1
+        End While
+        NextPrime = ctr
+    End Function
+    Shared Function isPrime(ByVal i As Integer) As Boolean
+        If i = 3 Or i = 5 Then Return True
+        If i Mod 2 = 0 Then Return False
+        If i Mod 3 = 0 Then Return False
+        If i Mod 5 = 0 Then Return False
+        Return True
+    End Function
+End Class
