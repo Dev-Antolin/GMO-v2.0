@@ -1,0 +1,112 @@
+<html>
+<head>
+<title>GMO Web Version 1.5</title>
+        <style type="text/css">
+            #csxi
+            {
+                width: 650px;
+                height: 830px;
+            }
+        </style>
+</head>
+<link rel="shortcut icon" href="Image/application.ico"/>
+<link href="Styles.css" rel="stylesheet" type="text/css" />
+<SCRIPT LANGUAGE="JavaScript">
+
+<!--
+
+  var Success
+
+  function Initialisation()
+  {
+    document.form1.selectbutton.disabled = false
+    document.form1.scanbutton.disabled = true
+    document.form1.uploadbutton.disabled = true
+  }
+
+  function SelectClick()
+  {
+    csxi.SelectTwainDevice();
+    if (csxi.TwainConnected)
+    {
+      document.form1.scanbutton.disabled = false
+	  document.form1.selectbutton.disabled = true
+    }
+  }
+
+  function ScanClick()
+  {
+    csxi.Acquire();
+    if (csxi.ImageHeight != 0)
+    {
+	document.form1.uploadbutton.disabled = false
+	document.form1.selectbutton.disabled = true
+    document.form1.scanbutton.disabled = true
+    }
+    else
+    {
+	
+    }
+  }
+  function UploadClick()
+  {
+    //Add the URL to the file saving script, including the http:// prefix.
+    //The third parameter is the name that would appear in the HTML input type=file tag. csNetUpload does not use it.
+    //Success = csxi.PostImage('http://192.168.3.172/GMOWeb/filesave.aspx', 'memo.jpg', '', 2);
+    //Success = csxi.PostImage('http://testwebserver1/GMOWeb/filesave.aspx', 'memo.jpg', '', 2);
+    Success = csxi.PostImage('http://192.168.12.236/GMOWeb/filesave.aspx', 'memo.jpg', '', 2);
+    if (Success)
+    {
+      alert('Image Uploaded')
+	var answer = confirm ("Do you want to scan another page?")
+	if (answer)
+	    Initialisation()
+	    else
+	    window.location="GMOCreate.aspx";
+	    document.form1.uploadbutton.disabled = true
+    }
+    else
+    {
+      alert('Upload Failed')
+    } 
+  }
+  function disableBackButton()
+        {
+        window.history.forward();
+        }
+        setTimeout("disableBackButton()", 0);
+  function confirmation() 
+        {
+	window.location = "GMOStartScan.aspx";
+	}
+	
+//-->
+</script>
+<body onLoad="Initialisation()">
+<form name=form1 style="text-align:center">
+<div>
+<h1 align="left" style="border-bottom:4px solid; border-color:rgb(140,170,230)">
+<img alt="M. Lhuillier" src="Image/ReviseML.jpg" />
+</h1>
+</div>
+<table>
+<tr>
+  <td><input type=button name=selectbutton value="Select Device" 
+          onClick="SelectClick()" style="width: 119px"></td>
+  <td><input type=button name=scanbutton value="Scan Image" onClick="ScanClick()" 
+          style="width: 105px"></td>
+  <td><input type=button name=uploadbutton value="Upload Image" 
+          onClick="UploadClick();" style="width: 119px"></td>
+  <td><input type=button name=returnbutton value="Return Menu" 
+          onClick="confirmation()" style="width: 119px"></td>
+  </tr>
+</table>
+</form>
+<center>
+<object classid="clsid:5220cb21-c88d-11cf-b347-00aa00a28331">
+	<param name="LPKPath" value="csximage.lpk">
+</object>
+<object ID="csxi" classid="clsid:62E57FC5-1CCD-11D7-8344-00C1261173F0" codebase="csximage.cab" width="600" height="400"></object> 
+</center>
+</body>
+</html>
