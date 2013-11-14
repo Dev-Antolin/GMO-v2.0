@@ -1,0 +1,21 @@
+<%@ Page language="vb" debug="true" %>
+<%@ Import NameSpace = "csNetUpload" %>
+
+<%
+    'Change the NameSpace to "csNetUpload" if used with the full version
+    If Me.Session("_zonecode") = "VISMIN" Then
+        Dim Upload As New UploadClass
+        Dim d As String
+        d = Format(Date.Now, "01MMddyyyyhhmmsstt").ToString
+        Upload.ReadUpload()
+        Upload.SaveFile(0, Server.MapPath("./VisminImageMemo/" & d.Trim & "") & Upload.FileName(0))
+    End If
+    If Trim(Me.Session("_zonecode")) = "LUZON" Then
+        Dim Upload As New UploadClass
+        Dim d As String
+        d = Format(Date.Now, "02MMddyyyyhhmmsstt").ToString
+        Upload.ReadUpload()
+        Upload.SaveFile(0, Server.MapPath("./LuzonImageMemo/" & d.Trim & "") & Upload.FileName(0))
+    End If
+    
+%>

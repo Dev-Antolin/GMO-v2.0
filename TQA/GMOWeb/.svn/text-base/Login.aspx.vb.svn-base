@@ -1,0 +1,101 @@
+﻿Imports System
+Imports System.IO
+Imports System.Data
+Imports System.Data.SqlClient
+Imports clsGMOUser
+Partial Class Login
+    Inherits System.Web.UI.Page
+    Protected Sub btnLogin_Click(ByVal sender As Object, ByVal e As System.EventArgs) Handles btnLogin.Click
+        If txtPassword.Text = "" And txtUsername.Text = "" Then
+            lblMsg.Visible = True
+            lblMsg.Text = "No Username and Password!"
+            txtUsername.Focus()
+            Exit Sub
+        End If
+        If txtPassword.Text = "" And txtUsername.Text = txtUsername.Text Then
+            lblMsg.Visible = True
+            lblMsg.Text = "Please input password!"
+            txtPassword.Focus()
+            Exit Sub
+        End If
+        If txtUsername.Text = "" And txtPassword.Text = txtPassword.Text Then
+            lblMsg.Visible = True
+            lblMsg.Text = "Please input username!"
+            txtUsername.Focus()
+            Exit Sub
+        End If
+        Dim LoginMsg As String = Search_Me()
+        If LoginMsg = "true" Then
+            If Trim(Me.Session("_task")) = ("GMO-GENASST") Or Trim(Me.Session("_task")) = ("GMO-ASTGENMAN") Then
+                Response.Redirect("GMOStartScan.aspx")
+            End If
+            If Trim(Me.Session("_task")) = ("REGIONAL MAN") Or Trim(Me.Session("_task")) = ("Regional Man") Then
+                Response.Redirect("GMORAB.aspx")
+            End If
+            If Trim(Me.Session("_task")) = ("AREA MANAGER") Or Trim(Me.Session("_task")) = ("Area Manager") Then
+                Response.Redirect("GMORAB.aspx")
+            End If
+            If Trim(Me.Session("_task")) = ("BM/BOSMAN") Or Trim(Me.Session("_task")) = ("Bm/Bosman") Or Trim(Me.Session("_task")) = ("LPT/BM-A") Or Trim(Me.Session("_task")) = ("LPT/BM-R") Or Trim(Me.Session("_task")) = ("LPT/BM-A/BOSMAN") Or Trim(Me.Session("_task")) = ("LPT/BM-R/BOSMAN") Or Trim(Me.Session("_task")) = ("LPTL/BM/LPT/BOSMAN") Then
+                Response.Redirect("GMORAB.aspx")
+            End If
+        ElseIf LoginMsg = "you're not authorized" Then
+            lblMsg.Visible = True
+            lblMsg.Text = "You're not Authorized!"
+            txtPassword.Text = ""
+            txtUsername.Text = ""
+            txtUsername.Focus()
+            Exit Sub
+        ElseIf LoginMsg = "no connection" Then
+            lblMsg.Visible = True
+            lblMsg.Text = "Connection Failed!"
+            txtPassword.Focus()
+        End If
+    End Sub
+    Protected Sub Page_Load(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Load
+        txtUsername.Focus()
+        Me.Response.Cache.SetCacheability(HttpCacheability.NoCache)
+        Me.Response.Cache.SetExpires(DateTime.Now.AddSeconds(-1))
+        Me.Response.Cache.SetValidUntilExpires(False)
+        lblMsg.Visible = False
+        Me.Session("_fullname") = ""
+    End Sub
+    Public Function Search_Me() As String
+        Dim Con As New SqlConnection
+        Dim Com As New SqlCommand
+        Dim dr As SqlDataReader
+
+        _DatabaseConnection()
+        _ConnectionString()
+
+        Try
+            Con.ConnectionString = constr
+            If Con.State = ConnectionState.Closed Then
+                Con.Open()
+            End If
+        Catch exc As Exception
+            Return "no connection"
+        End Try
+        Try
+            Com = Con.CreateCommand
+            Com.CommandText = "select (replace(rtrim(sur_name),'ñ','n')+', '+ replace(rtrim(first_name),'ñ','n')) as fullname, " & _
+            "wa.task, wa.comp, wa.costcenter, wb.bedrnm ,wa.zonecode from Webaccounts as wa " & _
+            "inner join webbranches as wb on wa.comp = wb.bedrnr and wa.zonecode= wb.zonecode " & _
+            "where usr_id = '" + txtUsername.Text + "' and res_id like '" + txtPassword.Text + "'"
+            dr = Com.ExecuteReader
+            If dr.Read() Then
+                Me.Session.Add("_fullname", dr.Item("fullname"))
+                Me.Session.Add("_task", dr.Item("task"))
+                Me.Session.Add("_compcode", dr.Item("comp"))
+                Me.Session.Add("_ccenter", dr.Item("costcenter"))
+                Me.Session.Add("_compname", dr.Item("bedrnm"))
+                Me.Session.Add("_zonecode", dr.Item("zonecode"))
+                dr.Close()
+                Return "true"
+            Else
+                Return "you're not authorized"
+            End If
+        Catch ex As Exception
+            Return "you're not authorized"
+        End Try
+    End Function
+End Class

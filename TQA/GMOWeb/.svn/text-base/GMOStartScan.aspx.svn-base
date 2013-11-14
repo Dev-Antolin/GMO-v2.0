@@ -1,0 +1,11 @@
+﻿<%@ Page Language="VB" MasterPageFile="~/LeftPageMaster.master" AutoEventWireup="false" CodeFile="GMOStartScan.aspx.vb" Inherits="GMOStartScan" title="GMOWeb Version 1.0" %>
+
+<asp:Content ID="Content1" ContentPlaceHolderID="LeftContentPlaceHolder" Runat="Server">
+    <div id="content2">
+<p style="margin-left:10px; margin-top:10px;">&nbsp;<a href="http://192.168.12.188/GMOWebs/TwainUploadASPNET.htm">Scan Memo</a></p>
+<p style="margin-left:10px; margin-top:10px;">&nbsp;<a href="UploadMemo.aspx">Upload Memo</a></p>
+<%--<a href="http://192.168.12.143/Sample/TwainUploadASPNET.htm">Start Scan</a>--%>
+<%--<a href="http://192.168.12.214/GMOWebs/TwainUploadASPNET.htm">Start Scan</a>--%>
+</div>
+</asp:Content>
+

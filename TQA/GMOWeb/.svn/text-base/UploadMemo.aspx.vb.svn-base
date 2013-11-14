@@ -1,0 +1,314 @@
+﻿Imports System
+Imports System.IO
+Imports System.Data
+Imports System.Data.SqlClient
+Imports clsGMOUser
+Partial Class UploadMemo
+    Inherits System.Web.UI.Page
+    Dim DMemo As String = ""
+    Dim CMemo As String = ""
+    Dim MemoPath As String = ""
+    Dim sFileV As String = "~/VisminImageMemo/"
+    Dim sFileL As String = "~/LuzonImageMemo/"
+    Dim sFileServerVis As String = System.Web.HttpContext.Current.Server.MapPath("") & "\MemoImageVismin\"
+    Dim sFileDirVis As String = System.Web.HttpContext.Current.Server.MapPath("") & "\VisminImageMemo\"
+    Dim sFileServerLuz As String = System.Web.HttpContext.Current.Server.MapPath("") & "\MemoImageLuzon\"
+    Dim sFileDirLuz As String = System.Web.HttpContext.Current.Server.MapPath("") & "\LuzonImageMemo\"
+
+
+    Protected Sub Page_Load(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Load
+        Create_trxnumber()
+        CheckLogin()
+        txtStartDate.Attributes.Add("onkeypress", "return charD(event)")
+        txtStartDate.Attributes("onchange") = "TextDateChanged(this.value)"
+        txtTRXNumber.Visible = False
+        txtCircular.Attributes.Add("onkeypress", "return numerals(event)")
+        txtSubject.Attributes.Add("onkeypress", "return Chars(event)")
+    End Sub
+    Private Sub CheckLogin()
+        If Me.Session("_fullname") = "" Then
+            Response.Redirect("Login.aspx")
+        End If
+    End Sub
+    Protected Sub btnUpload_Click(ByVal sender As Object, ByVal e As System.EventArgs) Handles btnUpload.Click
+        UploadFile()
+    End Sub
+    Public Sub UploadFile()
+        If txtStartDate.Text.Length < 8 Then
+            txtStartDate.Focus()
+            Statuslabel.Text = "Upload status: Invalid Date!"
+            Exit Sub
+        End If
+        If txtStartDate.Text = "" OrElse Not IsDate(txtStartDate.Text) Then
+            txtStartDate.Focus()
+            Statuslabel.Text = "Upload status: Invalid Date!"
+            Exit Sub
+        End If
+        'VISMIN UPLOAD
+        If Trim(Me.Session("_zonecode")) = "VISMIN" Then
+            Dim intFileSizeLimit As Integer = 100000
+            Dim strFileNameWithPath As String = fuMemoUpload.PostedFile.FileName
+            Dim strExtensionName As String = System.IO.Path.GetExtension(strFileNameWithPath)
+            Dim strFileName As String = System.IO.Path.GetFileName(strFileNameWithPath)
+            Dim intFileSize As Integer = fuMemoUpload.PostedFile.ContentLength / 102400
+            strExtensionName = strExtensionName.ToLower()
+            If strExtensionName.Equals(".jpg") OrElse strExtensionName.Equals(".jpeg") Then
+                If intFileSize < intFileSizeLimit Then
+                    If intFileSize = 0 Then
+                        Statuslabel.Text = "Upload status: File size is " & intFileSize & " Kb. Please check the file to upload."
+                        Exit Sub
+                    End If
+                    Dim Filenme As String = "Upload"
+                    Dim d As String
+                    d = Format(Date.Now, "01MMddyyyyhhmmsstt")
+                    fuMemoUpload.PostedFile.SaveAs(Server.MapPath(sFileV & d.ToString & Filenme.ToString) & strExtensionName)
+
+                    Dim xname() As String = System.IO.Directory.GetFiles(sFileDirVis, "*.jpg")
+                    Dim y As Integer
+                    Dim path As String = ""
+                    For y = 0 To xname.Count - 1
+                        path += xname(y).Replace(sFileDirVis, sFileServerVis).ToString & ","
+                    Next
+                    MemoPath = path.Substring(0, path.Length - 1)
+
+                    If Insert_Creator() Then
+                        If Insert_Upload() Then
+                            MoveFiles(sFileDirVis, sFileServerVis)
+                            Response.Write("<script language=javascript>")
+                            Response.Write("alert('" & "Memo file uploaded!" & "')")
+                            Response.Write("</script>")
+                            Response.Write("<script language=javascript>")
+                            Response.Write("window.location = 'UploadMemo.aspx'")
+                            Response.Write("</script>")
+                        End If
+                    Else
+                        Statuslabel.Text = "Upload status: Invalid Date!"
+                    End If
+                Else
+                    Statuslabel.Text = "Upload status: File size exceeded than limit " & intFileSizeLimit & " MB, Please upload smaller file."
+                End If
+            Else
+                Statuslabel.Text = "Upload status: Only JPEG files are accepted!"
+                Statuslabel.ForeColor = System.Drawing.Color.Red
+            End If
+        End If
+        'LUZON UPLOAD
+        If Trim(Me.Session("_zonecode")) = "LUZON" Then
+            Dim intFileSizeLimit As Integer = 100000
+            Dim strFileNameWithPath As String = fuMemoUpload.PostedFile.FileName
+            Dim strExtensionName As String = System.IO.Path.GetExtension(strFileNameWithPath)
+            Dim strFileName As String = System.IO.Path.GetFileName(strFileNameWithPath)
+            Dim intFileSize As Integer = fuMemoUpload.PostedFile.ContentLength / 102400
+            strExtensionName = strExtensionName.ToLower()
+            If strExtensionName.Equals(".jpg") OrElse strExtensionName.Equals(".jpeg") Then
+                If intFileSize < intFileSizeLimit Then
+                    If intFileSize = 0 Then
+                        Statuslabel.Text = "Upload status: File size is " & intFileSize & " Kb. Please check the file to upload."
+                        Exit Sub
+                    End If
+                    Dim Filenme As String = "Upload"
+                    Dim d As String
+                    d = Format(Date.Now, "02MMddyyyyhhmmsstt")
+                    fuMemoUpload.PostedFile.SaveAs(Server.MapPath(sFileL & d.ToString & Filenme.ToString) & strExtensionName)
+
+                    Dim xname() As String = System.IO.Directory.GetFiles(sFileDirLuz, "*.jpg")
+                    Dim y As Integer
+                    Dim path As String = ""
+                    For y = 0 To xname.Count - 1
+                        path += xname(y).Replace(sFileDirLuz, sFileServerLuz).ToString & ","
+                    Next
+                    MemoPath = path.Substring(0, path.Length - 1)
+
+                    If Insert_Creator() Then
+                        If Insert_Upload() Then
+                            MoveFiles(sFileDirLuz, sFileServerLuz)
+                            Response.Write("<script language=javascript>")
+                            Response.Write("alert('" & "Memo file uploaded!" & "')")
+                            Response.Write("</script>")
+                            Response.Write("<script language=javascript>")
+                            Response.Write("window.location = 'UploadMemo.aspx'")
+                            Response.Write("</script>")
+                        End If
+                    Else
+                        Statuslabel.Text = "Upload status: Invalid Date!"
+
+                    End If
+                Else
+                    Statuslabel.Text = "Upload status: File size exceeded than limit " & intFileSizeLimit & " MB, Please upload smaller file."
+                End If
+            Else
+                Statuslabel.Text = "Upload status: Only JPEG files are accepted!"
+                Statuslabel.ForeColor = System.Drawing.Color.Red
+            End If
+        End If
+    End Sub
+    Public Function Insert_Creator() As Boolean
+        Dim oCom As New SqlCommand
+        Dim oTrans As SqlTransaction
+        Dim Con As New SqlConnection
+        DMemo = Format(Date.Now, "yyyy-MM-dd hh:mm:ss tt")
+        CMemo = txtStartDate.Text
+        'CMemo = Format(Date.Now, "yyyy-MM-dd hh:mm:ss tt")
+        Dim MemoFrom As String = "GM's OFFICE"
+        Dim a As String = "insert into memoheader(trxnumber, createdby, circularNumber, subject, MemoFrom, " & _
+                          "MemoPath, Memodate, createdate, zonecode)values" & _
+                          "('" + txtTRXNumber.Text.Trim + "', '" + Trim(Me.Session("_fullname")) + "'," & _
+                          "'" + txtCircular.Text.Trim + "', '" + txtSubject.Text.Trim.Replace("'", "''") + "'," & _
+                          "'" + MemoFrom.Trim.Replace("'", "''") + "', '" + MemoPath.Trim.Replace("'", "''") + "'," & _
+                          "'" + DMemo.Trim + "', '" + CMemo.Trim + "', '" + Trim(Me.Session("_zonecode")) + "')"
+        Con.ConnectionString = constr2
+        If Con.State = ConnectionState.Closed Then
+            Con.Open()
+            oTrans = Con.BeginTransaction()
+            oCom = Con.CreateCommand
+            oCom.CommandTimeout = 0
+            oCom.Transaction = oTrans
+            Try
+                oCom.CommandText = a
+                oCom.ExecuteNonQuery()
+                oTrans.Commit()
+                oCom.Dispose()
+            Catch ex As Exception
+                'MsgBox(ex.Message())
+                oTrans.Rollback()
+                Return False
+            Finally
+                Con.Close()
+            End Try
+        End If
+        Return True
+    End Function
+    Public Function Insert_Upload() As Boolean
+        Dim Employee As String = "None"
+        Dim oCom As New SqlCommand
+        Dim oTrans As SqlTransaction
+        Dim Con As New SqlConnection
+        Dim MemoTo As String = "GM's OFFICE"
+        Dim a As String = "insert into memodivision(trxnumber, memoto, division, confirmedreceived, confirmeddate, " & _
+            "status, statmodifydate, statmodifyby)values('" + txtTRXNumber.Text.Trim + "'," & _
+            "'" + MemoTo.Trim.Replace("'", "''") + "','" + Employee.Trim + "', '', '', '', '', '')"
+        Con.ConnectionString = constr2
+        If Con.State = ConnectionState.Closed Then
+            Con.Open()
+            oTrans = Con.BeginTransaction()
+            oCom = Con.CreateCommand
+            oCom.CommandTimeout = 0
+            oCom.Transaction = oTrans
+            Try
+                oCom.CommandText = a
+                oCom.ExecuteNonQuery()
+                oTrans.Commit()
+                oCom.Dispose()
+            Catch ex As Exception
+                'MsgBox(ex.Message())
+                oTrans.Rollback()
+                Return False
+            Finally
+                Con.Close()
+            End Try
+        End If
+        Return True
+    End Function
+    Public Sub Create_trxnumber()
+        Dim numRegion As Integer
+        Dim _Mnth As String
+        Dim _Yr As String
+        Dim _Increment As String = ""
+        Dim ds As New DataSet
+
+        If Trim(Me.Session("_task")) = "GMO-ASSISTANT" And Trim(Me.Session("_ZoneCode")) = "VISMIN" Then
+            numRegion = 1
+        Else
+            numRegion = 2
+        End If
+
+        _Mnth = Format(Date.Now, "MM")
+        _Yr = Format(Date.Now, "yyyy")
+
+        _Increment = Auto_trxnumber(numRegion)
+        If _Increment = "error" Then
+            Exit Sub
+        End If
+
+        If Trim(Me.Session("_zonecode")) = "VISMIN" Then
+            txtTRXNumber.Text = numRegion & _Mnth & _Yr & _Increment
+        Else
+            txtTRXNumber.Text = numRegion & _Mnth & _Yr & _Increment
+        End If
+    End Sub
+    Public Function Auto_trxnumber(ByVal numRegion As Integer) As String
+        Dim Con As New SqlConnection
+        Dim Com As New SqlCommand
+        Dim ds As New DataSet
+        _DatabaseConnection1()
+        _ConnectionString1()
+        Try
+            Dim b As String = ""
+            If numRegion = 1 Then
+                b = "select max(trxnumber) +1 as auto_num from memoheader where trxnumber like '1%'"
+            ElseIf numRegion = 2 Then
+                b = "select max(trxnumber) +1 as auto_num from memoheader where trxnumber like '2%'"
+            End If
+            If b <> "" Then
+                ds = Execute_Dataset1(b)
+                If Not ds Is Nothing AndAlso ds.Tables(0).Rows(0).Item(0).ToString.Trim <> "" Then
+                    Return ds.Tables(0).Rows(0).Item(0).ToString.Substring(7, 3)
+                Else
+                    Return "001"
+                End If
+            Else
+                Return "error"
+            End If
+        Catch ex As Exception
+            MsgBox(ex.Message)
+            Return "error"
+        End Try
+    End Function
+    Public Function Execute_Dataset1(ByVal as_sql As String) As DataSet
+        Dim Con As New SqlConnection
+        Dim Com As New SqlCommand
+        Dim sqlConn As New SqlConnection
+        Dim sqlAdapter As SqlDataAdapter
+        Dim sqlDataset As New DataSet
+
+        Execute_Dataset1 = Nothing
+        Try
+            Try
+                Con.ConnectionString = constr2
+                If Con.State = ConnectionState.Closed Then
+                    Con.Open()
+                End If
+            Catch
+            End Try
+            sqlAdapter = New SqlDataAdapter(as_sql, Con)
+            sqlAdapter.Fill(sqlDataset)
+            If Not sqlDataset Is Nothing Then
+                If sqlDataset.Tables(0).Rows.Count <> 0 Then
+                    Execute_Dataset1 = sqlDataset
+                    sqlDataset.Dispose()
+                    sqlAdapter.Dispose()
+                End If
+            End If
+            Con.Close()
+        Catch ex As Exception
+            MsgBox(ex.Message)
+            Con.Close()
+        End Try
+    End Function
+    Public Sub MoveFiles(ByVal sourcePath As String, ByVal DestinationPath As String)
+        If (Directory.Exists(sourcePath)) Then
+            For Each fName As String In Directory.GetFiles(sourcePath)
+                If File.Exists(fName) Then
+                    Dim dFile As String = String.Empty
+                    dFile = Path.GetFileName(fName)
+                    If dFile = "Thumbs.db" Then
+                        Exit Sub
+                    End If
+                    Dim dFilePath As String = String.Empty
+                    dFilePath = DestinationPath + dFile
+                    File.Move(fName, dFilePath)
+                End If
+            Next
+        End If
+    End Sub
+End Class
